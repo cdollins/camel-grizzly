@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 /**
  * Component for Grizzly.
  *
  * @version
  */
-public class GrizzlyConstants {
-    public static final String GRIZZLY_CLOSE_SESSION_WHEN_COMPLETE = "CamelGrizzlyCloseSessionWhenComplete";
+public interface GrizzlyConstants {
+    String GRIZZLY_CLOSE_SESSION_WHEN_COMPLETE = "CamelGrizzlyCloseSessionWhenComplete";
+    String GRIZZLY_CONNECTION = "CamelGrizzlyConnection";
+    String GRIZZLY_LOCAL_ADDRESS = "CamelGrizzlyLocalAddress";
+    String GRIZZLY_REMOTE_ADDRESS = "CamelGrizzlyPeerAddress";
 }

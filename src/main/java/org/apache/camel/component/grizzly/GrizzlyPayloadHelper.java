@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultExchangeHolder;

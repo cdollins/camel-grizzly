@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.ServicePoolAware;
@@ -26,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.glassfish.grizzly.nio.transport.TCPNIOServerConnection;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
-import org.glassfish.grizzly.CompletionHandler;
+import org.glassfish.grizzly.Connection;
 
-import java.net.SocketAddress;
-import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Component for Grizzly.
@@ -43,7 +43,7 @@ public class GrizzlyProducer extends DefaultProducer implements ServicePoolAware
     private final long timeout;
     private final boolean sync;
     private final CamelLogger noReplyLogger;
-    private TCPNIOServerConnection connection;
+    private Connection connection;
     private TCPNIOTransport connector;
 
     public GrizzlyProducer(final GrizzlyEndpoint grizzlyEndpoint) {
@@ -59,8 +59,14 @@ public class GrizzlyProducer extends DefaultProducer implements ServicePoolAware
         if (connection == null && !lazySessionCreation) {
             throw new IllegalStateException("Not started yet!");
         }
+        
         if (connection == null || !connection.isOpen()) {
-            openConnection();
+            connector = getEndpoint().getConnector();
+            connector.start();
+            
+            Future<Connection> future = connector.connect(getEndpoint().getAddress());
+            connection = future.get(10, TimeUnit.SECONDS);
+            assert connection != null;
         }
 
         if (getEndpoint().getConfiguration().getEncoding() != null) {
@@ -86,7 +92,6 @@ public class GrizzlyProducer extends DefaultProducer implements ServicePoolAware
             //handler.reset();
         }
 
-        // log what we are writing
         if (LOG.isDebugEnabled()) {
             Object out = body;
             if (body instanceof byte[]) {
@@ -114,20 +119,9 @@ public class GrizzlyProducer extends DefaultProducer implements ServicePoolAware
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Closing session when complete at address: " + getEndpoint().getAddress());
             }
-            connection.close();
+            connector.stop();
         }
         
-    }
-
-    private void openConnection() throws IOException {
-        final SocketAddress address = getEndpoint().getAddress();
-        connector = getEndpoint().getConnector();
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating connector to address: " + address + " using connector: " + connector + " timeout: " + timeout + " millis.");
-        }
-
-        connection = connector.bind(address);
     }
 
     @Override
@@ -139,34 +133,5 @@ public class GrizzlyProducer extends DefaultProducer implements ServicePoolAware
     public boolean isSingleton() {
         //Todo examine this falacy
         return false;
-    }
-
-    private final class ResponseHandler implements CompletionHandler {
-        private Object message;
-        private Throwable cause;
-        private boolean messageReceived;
-
-        protected ResponseHandler(GrizzlyProducer producer) {
-        }
-
-        @Override
-        public void cancelled() {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void failed(Throwable throwable) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void completed(Object result) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void updated(Object result) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
     }
 }

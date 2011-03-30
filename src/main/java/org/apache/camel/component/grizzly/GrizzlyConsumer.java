@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.Processor;
@@ -53,6 +53,7 @@ public class GrizzlyConsumer extends DefaultConsumer {
             LOG.info("Binding to server address: " + address + " using acceptor: " + acceptor);
         }
         connection = acceptor.bind(address);
+        acceptor.start();
     }
 
     @Override
@@ -62,7 +63,7 @@ public class GrizzlyConsumer extends DefaultConsumer {
         if (LOG.isInfoEnabled()) {
             LOG.info("Unbinding from server connection: " + connection + " using acceptor: " + acceptor);
         }
-        acceptor.unbind(connection);
+        acceptor.stop();
         super.doStop();
     }
 

@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.RuntimeCamelException;
+import org.glassfish.grizzly.filterchain.Filter;
+import org.glassfish.grizzly.Codec;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Component for Grizzly.
@@ -32,7 +34,7 @@ public class GrizzlyConfiguration implements Cloneable {
     private int port;
     private boolean sync = true;
     private boolean textline;
-    private TextLineDelimiter textlineDelimiter;
+    private String textlineDelimiter;
     private String encoding;
     private long timeout = 30000;
     private boolean lazySessionCreation = true;
@@ -41,10 +43,11 @@ public class GrizzlyConfiguration implements Cloneable {
     private int encoderMaxLineLength = -1;
     private int decoderMaxLineLength = -1;
     private boolean allowDefaultCodec = true;
+    private Codec codec;
     private boolean disconnect;
     private boolean disconnectOnNoReply = true;
     private LoggingLevel noReplyLogLevel = LoggingLevel.WARN;
-    private Map<String, Object> filters;
+    private List<Filter> filters;
 
 
     public GrizzlyConfiguration copy() {
@@ -95,11 +98,11 @@ public class GrizzlyConfiguration implements Cloneable {
         this.textline = textline;
     }
 
-    public TextLineDelimiter getTextlineDelimiter() {
+    public String getTextlineDelimiter() {
         return textlineDelimiter;
     }
 
-    public void setTextlineDelimiter(final TextLineDelimiter textlineDelimiter) {
+    public void setTextlineDelimiter(final String textlineDelimiter) {
         this.textlineDelimiter = textlineDelimiter;
     }
 
@@ -191,11 +194,19 @@ public class GrizzlyConfiguration implements Cloneable {
         this.noReplyLogLevel = noReplyLogLevel;
     }
 
-    public void setFilters(final Map<String, Object> filters) {
+    public void setFilters(final List<Filter> filters) {
         this.filters = filters;
     }
 
-    public Map<String, Object> getFilters() {
+    public List<Filter> getFilters() {
         return filters;
+    }
+
+    public Codec getCodec() {
+        return codec;
+    }
+
+    public void setCodec(Codec codec) {
+        this.codec = codec;
     }
 }

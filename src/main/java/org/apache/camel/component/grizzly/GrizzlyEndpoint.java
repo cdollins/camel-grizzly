@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camel.component.grizzly;
+package org.apache.camel.component.grizzly;
 
 import org.apache.camel.impl.DefaultEndpoint;
-import org.apache.camel.MultipleConsumersSupport;
-import org.apache.camel.Producer;
-import org.apache.camel.Consumer;
-import org.apache.camel.Processor;
+import org.apache.camel.*;
 import org.apache.camel.util.ObjectHelper;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
+import org.glassfish.grizzly.Connection;
 
 import java.net.SocketAddress;
 
@@ -32,16 +30,15 @@ import java.net.SocketAddress;
  * @version  1.0
  */
 public class GrizzlyEndpoint extends DefaultEndpoint implements MultipleConsumersSupport {
-    private final String uri;
-    private final GrizzlyComponent grizzlyComponent;
     private SocketAddress address;
     private GrizzlyConfiguration configuration;
     private TCPNIOTransport acceptor;
     private TCPNIOTransport connector;
 
-    public GrizzlyEndpoint(final String uri, final GrizzlyComponent grizzlyComponent) {
-        this.uri = uri;
-        this.grizzlyComponent = grizzlyComponent;
+    public GrizzlyEndpoint() {}
+
+    public GrizzlyEndpoint(String endpointUri, GrizzlyComponent component) {
+        super(endpointUri, component);
     }
 
     @Override
@@ -60,7 +57,15 @@ public class GrizzlyEndpoint extends DefaultEndpoint implements MultipleConsumer
         ObjectHelper.notNull(acceptor, "acceptor");
 
         return new GrizzlyConsumer(this, processor);
-
+    }
+    
+    public Exchange createExchange(final Connection connection, final Object payload) {
+        Exchange exchange = createExchange();
+        exchange.getIn().setHeader(GrizzlyConstants.GRIZZLY_CONNECTION, connection);
+        exchange.getIn().setHeader(GrizzlyConstants.GRIZZLY_LOCAL_ADDRESS, connection.getLocalAddress());
+        exchange.getIn().setHeader(GrizzlyConstants.GRIZZLY_REMOTE_ADDRESS, connection.getPeerAddress());
+        GrizzlyPayloadHelper.setIn(exchange, payload);
+        return exchange;
     }
 
     @Override
